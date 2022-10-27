@@ -1,3 +1,7 @@
+
+
+
+
 module "vpc" {
   source = "cloudposse/vpc/aws"
   # Cloud Posse recommends pinning every module to a specific version
@@ -90,7 +94,7 @@ resource "aws_instance" "my-ec2-vm" {
     sudo yum install httpd -y
     sudo systemctl enable httpd
     sudo systemctl start httpd
-    echo "<h1>Welcome to  AWS Infra created using Terraform in us-east-1 Region</h1>" > /var/www/html/index.html
+    echo "<h1>Welcome to StackSimplify ! AWS Infra created using Terraform in us-east-1 Region</h1>" > /var/www/html/index.html
     EOF  
   vpc_security_group_ids = [ aws_security_group.dev-vpc-sg.id ]
 }
@@ -108,7 +112,7 @@ resource "aws_instance" "my-ec2-vm2" {
     sudo yum install httpd -y
     sudo systemctl enable httpd
     sudo systemctl start httpd
-    echo "<h1>Welcome to AWS Infra created using Terraform in us-east-1 Region</h1>" > /var/www/html/index.html
+    echo "<h1>Welcome to StackSimplify ! AWS Infra created using Terraform in us-east-1 Region</h1>" > /var/www/html/index.html
     EOF  
   vpc_security_group_ids = [ aws_security_group.dev-vpc-sg.id ]
 }
@@ -124,4 +128,55 @@ output "public_az_subnet_ids" {
 
 output "vpc_ids" {
   value = module.vpc.vpc_id
+}
+
+
+
+
+module "elb_http" {
+  source  = "terraform-aws-modules/elb/aws"
+  version = "~> 2.0"
+
+  name = "elb-cn"
+
+  subnets         = ["us-east-1a","us-east-1b"]
+  security_groups = ["aws_security_group.dev-vpc-sg.id"]
+  internal        = false
+
+  listener = [
+    {
+      instance_port     = 80
+      instance_protocol = "HTTP"
+      lb_port           = 80
+      lb_protocol       = "HTTP"
+    },
+    {
+      instance_port     = 8080
+      instance_protocol = "http"
+      lb_port           = 8080
+      lb_protocol       = "http"
+      #ssl_certificate_id = "arn:aws:acm:eu-west-1:235367859451:certificate/6c270328-2cd5-4b2d-8dfd-ae8d0004ad31"
+    },
+  ]
+
+  health_check = {
+    target              = "HTTP:80/"
+    interval            = 30
+    healthy_threshold   = 2
+    unhealthy_threshold = 2
+    timeout             = 5
+  }
+
+  # access_logs = {
+  #   bucket = "my-access-logs-bucket"
+  # }
+
+  // ELB attachments
+  number_of_instances = 2
+  instances           = ["aws_instance.my-ec2-vm.id", "aws_instance.my-ec2-vm2.id"]
+
+  tags = {
+    Owner       = "user"
+    Environment = "dev"
+  }
 }
