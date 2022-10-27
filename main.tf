@@ -173,7 +173,7 @@ module "elb_http" {
 
   // ELB attachments
   number_of_instances = 2
-  instances           = ["aws_instance.my-ec2-vm.id", "aws_instance.my-ec2-vm2.id"]
+  instances           = ["i-0061eb6d691fffad8", "i-0e8ad4dcbc2bea6be"]
 
   tags = {
     Owner       = "user"
