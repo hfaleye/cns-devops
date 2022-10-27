@@ -140,7 +140,7 @@ module "elb_http" {
   name = "elb-cn"
 
   subnets         = ["subnet-0a4e1a32c3a6d2aa1", "subnet-04cded46fc18dd649"]
-  security_groups = ["aws_security_group.dev-vpc-sg.id"]
+  security_groups = ["sg-0a36cb631db6a5257"]
   internal        = false
 
   listener = [
